@@ -1,4 +1,4 @@
 SeletestUtils
 =============
 
-RESTFul web services run on selenium nodes
+RESTFul web services for selenium node management
