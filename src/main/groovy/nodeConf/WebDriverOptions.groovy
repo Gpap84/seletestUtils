@@ -45,7 +45,7 @@ class WebDriverOptions {
         if (!file.exists()) {
             log.info('Download {} from Central Repo', file)
             def ant = new AntBuilder()
-            ant.get(src: path, dest: 'driver.zip')
+            ant.get(src: file, dest: 'driver.zip')
             ant.unzip(src: 'driver.zip', dest: file.parent)
             ant.delete(file: 'driver.zip')
             ant.chmod(file: file, perm: '700')

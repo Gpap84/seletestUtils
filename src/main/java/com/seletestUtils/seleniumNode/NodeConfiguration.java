@@ -72,6 +72,9 @@ public class NodeConfiguration {
     @Value("${phantomjsdriver.path}")
     private String phantomJSDriverPath;
 
+    @Value("${selenium.path}")
+    private String seleniumPath;
+
     @Value("${chromedriver.version}")
     private String chromedriverVersion;
 
@@ -80,6 +83,9 @@ public class NodeConfiguration {
 
     @Value("${phantomjsdriver.version}")
     private String phantomJsdriverVersion;
+
+    @Value("${selenium.version}")
+    private String seleniumVersion;
 
     /**
      * Enum class for downloading and return WebDriver version on remote machine
@@ -100,6 +106,14 @@ public class NodeConfiguration {
                 File chromeDriverExecutable=new File(Url);
                 WebDriverOptions.downloadDriver(chromeDriverExecutable,file);
                 return "ChromeDriver version on remote node: "+Url;
+            }
+        },
+        SELENIUM("selenium"){
+            @Override
+            public String downloadDriver(String file, String Url) {
+                File chromeDriverExecutable=new File(Url);
+                WebDriverOptions.downloadDriver(chromeDriverExecutable,file);
+                return "Selenium standalone version on remote node: "+Url;
             }
         },
         PHANTOMJS("phantomJS"){
@@ -140,10 +154,18 @@ public class NodeConfiguration {
         } else if(type.contains("phantom")){
             Url=phantomJsdriverVersion;
             localFile=phantomJSDriverPath;
+        } else if(type.contains("selenium")){
+            Url=seleniumVersion;
+            localFile=seleniumPath;
         }
         return findByDriverType(type).downloadDriver(localFile,Url);
     }
 
+    /**
+     *Finds enum constant
+     * @param type
+     * @return DriverType
+     */
     static synchronized public DriverType findByDriverType(String type) {
         if (type != null) {
             for (DriverType driver : DriverType.values()) {
