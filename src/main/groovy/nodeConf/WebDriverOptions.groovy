@@ -26,11 +26,14 @@
  */
 package nodeConf
 
+import groovy.util.logging.Slf4j
+
 /**
  * WebDriver various groovy functions
  * @author Giannis Papadakis (mailTo:gpapadakis84@gmail.com)
  *
  */
+@Slf4j
 class WebDriverOptions {
 
     /**
@@ -40,13 +43,16 @@ class WebDriverOptions {
      */
     public static synchronized void downloadDriver(File file, String path) {
         if (!file.exists()) {
+            log.info('Download {} from Central Repo', file)
             def ant = new AntBuilder()
             ant.get(src: path, dest: 'driver.zip')
             ant.unzip(src: 'driver.zip', dest: file.parent)
             ant.delete(file: 'driver.zip')
             ant.chmod(file: file, perm: '700')
         }
-        else {}
+        else {
+            log.info('{} already exists', file)
+        }
 
     }
 }

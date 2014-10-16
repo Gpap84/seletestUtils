@@ -63,8 +63,14 @@ public class NodeConfiguration {
      * Driver Properties********************
      ***************************************
      */
-    @Value("${downloadWIN.path}")
-    private String downloadWinPath;
+    @Value("${chromedriver.path}")
+    private String chromeDriverPath;
+
+    @Value("${iedriver.path}")
+    private String ieDriverPath;
+
+    @Value("${phantomjsdriver.path}")
+    private String phantomJSDriverPath;
 
     @Value("${chromedriver.version}")
     private String chromedriverVersion;
@@ -82,26 +88,26 @@ public class NodeConfiguration {
     public enum DriverType{
         IE("ie"){
             @Override
-            public String downloadDriver(String path, String file) {
-                File ieDriverExecutable=new File(path);
+            public String downloadDriver(String file, String Url) {
+                File ieDriverExecutable=new File(Url);
                 WebDriverOptions.downloadDriver(ieDriverExecutable,file);
                 return "IEDriver version on remote node: "+file;
             }
         },
         CHROME("chrome"){
             @Override
-            public String downloadDriver(String path, String file) {
-                File chromeDriverExecutable=new File(path);
+            public String downloadDriver(String file, String Url) {
+                File chromeDriverExecutable=new File(Url);
                 WebDriverOptions.downloadDriver(chromeDriverExecutable,file);
-                return "ChromeDriver version on remote node: "+file;
+                return "ChromeDriver version on remote node: "+Url;
             }
         },
         PHANTOMJS("phantomJS"){
             @Override
-            public String downloadDriver(String path, String file) {
-                File phantomDriverExecutable=new File(path);
+            public String downloadDriver(String file, String Url) {
+                File phantomDriverExecutable=new File(Url);
                 WebDriverOptions.downloadDriver(phantomDriverExecutable,file);
-                return "PhantomJsDriver version on remote node: "+file;
+                return "PhantomJsDriver version on remote node: "+Url;
             }
         };
         private final String driverType;
@@ -123,15 +129,19 @@ public class NodeConfiguration {
      * @param type
      */
     public String downloadWebDriver(String type){
-        String file="";
+        String localFile="";
+        String Url="";
         if(type.contains("chrome")){
-            file=chromedriverVersion;
+            Url=chromedriverVersion;
+            localFile=chromeDriverPath;
         } else if(type.contains("ie")){
-            file=iedriverVersion;
+            Url=iedriverVersion;
+            localFile=ieDriverPath;
         } else if(type.contains("phantom")){
-            file=phantomJsdriverVersion;
+            Url=phantomJsdriverVersion;
+            localFile=phantomJSDriverPath;
         }
-        return findByDriverType(type).downloadDriver(downloadWinPath,file);
+        return findByDriverType(type).downloadDriver(localFile,Url);
     }
 
     static synchronized public DriverType findByDriverType(String type) {

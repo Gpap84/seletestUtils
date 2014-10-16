@@ -16,58 +16,60 @@
  <name>Seletest Web Services</name>
 
  <build>
-   <plugins>
+  <plugins>
 
-    <plugin>
-     <groupId>org.springframework.boot</groupId>
-     <artifactId>spring-boot-maven-plugin</artifactId>
-    </plugin>
+   <plugin>
+    <groupId>org.springframework.boot</groupId>
+    <artifactId>spring-boot-maven-plugin</artifactId>
+   </plugin>
 
+   <!-- Configuring the GMaven Plugin for Groovy Support in Maven 2 and 3 -->
+   <plugin>
+    <groupId>org.codehaus.gmaven</groupId>
+    <artifactId>gmaven-plugin</artifactId>
+    <version>${gmaven.version}</version>
+    <configuration>
+     <providerSelection>2.0</providerSelection>
+    </configuration>
+    <dependencies>
+     <dependency>
+      <groupId>org.codehaus.gmaven.runtime</groupId>
+      <artifactId>gmaven-runtime-2.0</artifactId>
+      <version>${gmaven.version}</version>
+     </dependency>
+     <dependency>
+      <groupId>org.codehaus.groovy</groupId>
+      <artifactId>groovy-all</artifactId>
+      <version>${groovy.version}</version>
+     </dependency>
+    </dependencies>
+   </plugin>
 
-    <!-- Configuring the GMaven Plugin for Groovy Support in Maven 2 and 
-     3 -->
-    <plugin>
-     <groupId>org.codehaus.gmaven</groupId>
-     <artifactId>gmaven-plugin</artifactId>
-     <version>${gmaven.version}</version>
-     <configuration>
-      <providerSelection>2.0</providerSelection>
-     </configuration>
-     <dependencies>
-      <dependency>
-       <groupId>org.codehaus.gmaven.runtime</groupId>
-       <artifactId>gmaven-runtime-2.0</artifactId>
-       <version>${gmaven.version}</version>
-      </dependency>
-      <dependency>
-       <groupId>org.codehaus.groovy</groupId>
-       <artifactId>groovy-all</artifactId>
-       <version>${groovy.version}</version>
-      </dependency>
-     </dependencies>
-    </plugin>
-
-   </plugins>
+  </plugins>
  </build>
 
  <dependencies>
   <dependency>
    <groupId>org.codehaus.groovy</groupId>
    <artifactId>groovy-all</artifactId>
-   <version>2.3.7</version>
   </dependency>
 
-  <!-- Core Spring -->
   <dependency>
    <groupId>org.springframework.boot</groupId>
    <artifactId>spring-boot-starter-web</artifactId>
-   <version>${org.springframework.version}</version>
+   <exclusions>
+    <exclusion>
+     <groupId>org.springframework.boot</groupId>
+     <artifactId>spring-boot-starter-tomcat</artifactId>
+    </exclusion>
+   </exclusions>
   </dependency>
 
   <dependency>
    <groupId>org.springframework.boot</groupId>
-   <artifactId>spring-boot-loader</artifactId>
+   <artifactId>spring-boot-starter-jetty</artifactId>
   </dependency>
+
  </dependencies>
 
  <!-- Shared version number properties -->
