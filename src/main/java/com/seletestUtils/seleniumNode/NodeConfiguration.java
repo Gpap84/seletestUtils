@@ -27,15 +27,18 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 package com.seletestUtils.seleniumNode;
 
 import java.io.File;
+import java.io.IOException;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
 
 import nodeConf.WebDriverOptions;
 
+import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Value;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 
@@ -49,132 +52,61 @@ public class NodeConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(NodeConfiguration.class);
 
+    @Autowired
+    Environment env;
+
     @PostConstruct
     public void startNodeConfiguration() {
         logger.info("{}@{} has been started ...", getClass().getSimpleName(), getClass().hashCode());
+        downloadWebDriverExecutables();
     }
 
     @PreDestroy
     public void stop() {
         logger.info("{}@{} has been stopped ...", getClass().getSimpleName(), getClass().hashCode());
+        removeExecutables();
     }
 
-    /***************************************
-     * Driver Properties********************
-     ***************************************
-     */
-    @Value("${chromedriver.path}")
-    private String chromeDriverPath;
+    /**Download IEDriver,ChromeDriver,PhantomJSDriver executables*/
+    private void downloadWebDriverExecutables(){
+        WebDriverOptions.downloadDriver(new File(env.getProperty("chromedriver.path")),env.getProperty("chromedriver.version"));
+        WebDriverOptions.downloadDriver(new File(env.getProperty("iedriver.path")),env.getProperty("iedriver.version"));
+        WebDriverOptions.downloadDriver(new File(env.getProperty("phantomjsdriver.path")),env.getProperty("phantomjsdriver.version"));
+        WebDriverOptions.downloadDriver(new File(env.getProperty("selenium.path")),env.getProperty("selenium.version"));
+    }
 
-    @Value("${iedriver.path}")
-    private String ieDriverPath;
-
-    @Value("${phantomjsdriver.path}")
-    private String phantomJSDriverPath;
-
-    @Value("${selenium.path}")
-    private String seleniumPath;
-
-    @Value("${chromedriver.version}")
-    private String chromedriverVersion;
-
-    @Value("${iedriver.version}")
-    private String iedriverVersion;
-
-    @Value("${phantomjsdriver.version}")
-    private String phantomJsdriverVersion;
-
-    @Value("${selenium.version}")
-    private String seleniumVersion;
-
-    /**
-     * Enum class for downloading and return WebDriver version on remote machine
-     * @author Giannis Papadakis (mailTo:gpapadakis84@gmail.com)
-     */
-    public enum DriverType{
-        IE("ie"){
-            @Override
-            public String downloadDriver(String file, String Url) {
-                File ieDriverExecutable=new File(Url);
-                WebDriverOptions.downloadDriver(ieDriverExecutable,file);
-                return "IEDriver version on remote node: "+file;
-            }
-        },
-        CHROME("chrome"){
-            @Override
-            public String downloadDriver(String file, String Url) {
-                File chromeDriverExecutable=new File(Url);
-                WebDriverOptions.downloadDriver(chromeDriverExecutable,file);
-                return "ChromeDriver version on remote node: "+Url;
-            }
-        },
-        SELENIUM("selenium"){
-            @Override
-            public String downloadDriver(String file, String Url) {
-                File chromeDriverExecutable=new File(Url);
-                WebDriverOptions.downloadDriver(chromeDriverExecutable,file);
-                return "Selenium standalone version on remote node: "+Url;
-            }
-        },
-        PHANTOMJS("phantomJS"){
-            @Override
-            public String downloadDriver(String file, String Url) {
-                File phantomDriverExecutable=new File(Url);
-                WebDriverOptions.downloadDriver(phantomDriverExecutable,file);
-                return "PhantomJsDriver version on remote node: "+Url;
-            }
-        };
-        private final String driverType;
-
-        DriverType(String driver) {
-            driverType = driver;
-        }
-
-        public String get() {
-            return driverType;
-        }
-
-        public abstract String downloadDriver(String path, String file);
-
+    /**Remove IEDriver,ChromeDriver,PhantomJSDriver executables*/
+    private void removeExecutables(){
+        new File("chromedriver.path").delete();
+        new File("iedriver.path").delete();
+        new File("phantomjsdriver.path").delete();
+        new File("selenium.path").delete();
     }
 
     /**
-     * This method called from Rest Client to download driver to remote machine
-     * @param type
+     * Register node to grid
+     * @param nodeConfig
+     * @param hubHost
+     * @param hubPort
      */
-    public String downloadWebDriver(String type){
-        String localFile="";
-        String Url="";
-        if(type.contains("chrome")){
-            Url=chromedriverVersion;
-            localFile=chromeDriverPath;
-        } else if(type.contains("ie")){
-            Url=iedriverVersion;
-            localFile=ieDriverPath;
-        } else if(type.contains("phantom")){
-            Url=phantomJsdriverVersion;
-            localFile=phantomJSDriverPath;
-        } else if(type.contains("selenium")){
-            Url=seleniumVersion;
-            localFile=seleniumPath;
+    public void registerNode(String nodeConfig, String hubHost, String hubPort) {
+        try {
+            ProcessBuilder pb = new ProcessBuilder("java","-jar",new File(env.getProperty("selenium.path")).getAbsolutePath().substring(new File(env.getProperty("selenium.path")).getAbsolutePath().lastIndexOf("\\")).replace("\\",""),"-role","node","-hub","http://"+hubHost+":"+hubPort+"/grid/register","-nodeConfig",nodeConfig+".json");
+            pb.directory(new File(env.getProperty("selenium.path")).getParentFile());
+            pb.redirectOutput(new File(new File(env.getProperty("selenium.path")).getParentFile()+"/node.txt"));
+            pb.start();
+        } catch (IOException e) {
+            logger.error(e.getMessage());
         }
-        return findByDriverType(type).downloadDriver(localFile,Url);
     }
 
-    /**
-     *Finds enum constant
-     * @param type
-     * @return DriverType
-     */
-    static synchronized public DriverType findByDriverType(String type) {
-        if (type != null) {
-            for (DriverType driver : DriverType.values()) {
-                if (type.startsWith(driver.get())) {
-                    return driver;
-                }
-            }
+    /**Return selenium node output*/
+    public String getNodeOutPut() {
+        try {
+            return FileUtils.readFileToString(new File(new File(env.getProperty("selenium.path")).getParentFile()+"/node.txt").getAbsoluteFile());
+        } catch (IOException e) {
+            logger.error(e.getMessage());
         }
         return null;
     }
-
 }

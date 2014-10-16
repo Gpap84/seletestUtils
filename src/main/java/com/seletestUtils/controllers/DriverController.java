@@ -44,9 +44,16 @@ public class DriverController {
     @Autowired
     NodeConfiguration node;
 
-    @RequestMapping(method=RequestMethod.GET, value="/driver/{driverType}")
-    public String getDriverExecutable(@PathVariable String driverType) {
-        return node.downloadWebDriver(driverType);
+    @RequestMapping(method=RequestMethod.GET, value="/registerNode/{nodeConfig}/{hubHost}/{hubPort}")
+    public void registerNode(
+            @PathVariable("nodeConfig") String nodeConfig,
+            @PathVariable("hubHost") String hubHost,
+            @PathVariable("hubPort") String hubPort) {
+         node.registerNode(nodeConfig, hubHost, hubPort);
     }
 
+    @RequestMapping(method=RequestMethod.GET, value="/node/output")
+    public String registerNode() {
+         return node.getNodeOutPut();
+    }
 }

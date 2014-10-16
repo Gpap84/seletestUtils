@@ -1,5 +1,5 @@
 /*
- This file is part of the SeletestUtils by Papadakis Giannis <gpapadakis84@gmail.com>.
+ This file is part of the Seletest by Papadakis Giannis <gpapadakis84@gmail.com>.
 
  Copyright (c) 2014, Papadakis Giannis <gpapadakis84@gmail.com>
  All rights reserved.
@@ -26,8 +26,9 @@
  */
 package nodeConf
 
-import groovy.util.logging.Slf4j
+import java.io.File;
 
+import groovy.util.logging.*
 /**
  * WebDriver various groovy functions
  * @author Giannis Papadakis (mailTo:gpapadakis84@gmail.com)
@@ -37,17 +38,21 @@ import groovy.util.logging.Slf4j
 class WebDriverOptions {
 
     /**
-     * Download ChromeDriver or IEDriver or PhantomJS  executables in remote environment if not exists using AntBuilder
+     * Download ChromeDriver or IEDriver or PhantomJS  executables in local environment if not exists using AntBuilder
      * @param file
      * @param path
      */
-    public static synchronized void downloadDriver(File file, String path) {
+  public static synchronized void downloadDriver(File file, String path) {
         if (!file.exists()) {
             log.info('Download {} from Central Repo', file)
             def ant = new AntBuilder()
-            ant.get(src: file, dest: 'driver.zip')
+            if(path.contains('.zip')) {
+            ant.get(src: path, dest: 'driver.zip')
             ant.unzip(src: 'driver.zip', dest: file.parent)
             ant.delete(file: 'driver.zip')
+            } else {
+               ant.get(src: path, dest: file.parent)
+            }
             ant.chmod(file: file, perm: '700')
         }
         else {
