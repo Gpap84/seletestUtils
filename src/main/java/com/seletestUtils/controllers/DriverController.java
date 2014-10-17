@@ -26,6 +26,8 @@ SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 package com.seletestUtils.controllers;
 
+import java.io.File;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -33,6 +35,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.seletestUtils.seleniumNode.NodeConfiguration;
+import com.seletestUtils.seleniumNode.RecordTestExecution;
 
 /**
  * DriverController class.
@@ -44,6 +47,15 @@ public class DriverController {
     @Autowired
     NodeConfiguration node;
 
+    @Autowired
+    RecordTestExecution record;
+
+    /**
+     * Register a node to Selenium Grid
+     * @param nodeConfig
+     * @param hubHost
+     * @param hubPort
+     */
     @RequestMapping(method=RequestMethod.GET, value="/registerNode/{nodeConfig}/{hubHost}/{hubPort}")
     public void registerNode(
             @PathVariable("nodeConfig") String nodeConfig,
@@ -52,8 +64,30 @@ public class DriverController {
          node.registerNode(nodeConfig, hubHost, hubPort);
     }
 
+    /**
+     * Get the output of selenium node for debugging
+     * @return String the output of node
+     */
     @RequestMapping(method=RequestMethod.GET, value="/node/output")
-    public String registerNode() {
+    public String getNodeOutPut() {
          return node.getNodeOutPut();
+    }
+
+    /**
+     * Start screen recording of test execution
+     * @param file
+     */
+    @RequestMapping(method=RequestMethod.GET, value="/screen/record/start/{file}")
+    public void startscreenRecord(@PathVariable("file") String file) {
+         File videoOutPut=new File(file);
+         record.startScreenRecording(videoOutPut);
+    }
+
+    /**
+     * Stop screen recording
+     */
+    @RequestMapping(method=RequestMethod.GET, value="/screen/record/stop")
+    public void stopscreenRecord() {
+         record.stopScreenRecording();
     }
 }

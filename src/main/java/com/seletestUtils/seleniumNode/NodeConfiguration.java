@@ -109,4 +109,10 @@ public class NodeConfiguration {
         }
         return null;
     }
+
+    public String stopNode(){
+     //TODO
+     return null;
+    }
+
 }
