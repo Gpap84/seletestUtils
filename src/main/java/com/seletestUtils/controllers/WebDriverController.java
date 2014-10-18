@@ -7,9 +7,9 @@ All rights reserved.
 Redistribution and use in source and binary forms, with or without modification,
 are permitted provided that the following conditions are met:
 
-    * Redistributions of source code must retain the above copyright notice,
+ * Redistributions of source code must retain the above copyright notice,
       this list of conditions and the following disclaimer.
-    * Redistributions in binary form must reproduce the above copyright notice,
+ * Redistributions in binary form must reproduce the above copyright notice,
       this list of conditions and the following disclaimer in the documentation
       and/or other materials provided with the distribution.
 
@@ -23,7 +23,7 @@ LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
 ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
 (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-*/
+ */
 package com.seletestUtils.controllers;
 
 import java.io.File;
@@ -42,7 +42,7 @@ import com.seletestUtils.seleniumNode.RecordTestExecution;
  * @author Giannis Papadakis (mailTo:gpapadakis84@gmail.com)
  */
 @RestController
-public class DriverController {
+public class WebDriverController {
 
     @Autowired
     NodeConfiguration node;
@@ -51,36 +51,51 @@ public class DriverController {
     RecordTestExecution record;
 
     /**
+     * Download executables...
+     * @param version
+     * @param type
+     * @param url
+     */
+    @RequestMapping(method=RequestMethod.GET, value="/downloads/{version}/{type}/{name:.+}")
+    public void downloadExecutables(
+            @PathVariable("version") String version,
+            @PathVariable("type") String type,
+            @PathVariable("name") String url) {
+        node.downloadDrivers(version, type, url);
+    }
+
+    /**
      * Register a node to Selenium Grid
      * @param nodeConfig
      * @param hubHost
      * @param hubPort
      */
-    @RequestMapping(method=RequestMethod.GET, value="/registerNode/{nodeConfig}/{hubHost}/{hubPort}")
+    @RequestMapping(method=RequestMethod.GET, value="/registerNode/{selenium}/{nodeConfig}/{hubHost}/{hubPort:.+}")
     public void registerNode(
+            @PathVariable("selenium") String selenium,
             @PathVariable("nodeConfig") String nodeConfig,
             @PathVariable("hubHost") String hubHost,
             @PathVariable("hubPort") String hubPort) {
-         node.registerNode(nodeConfig, hubHost, hubPort);
+        node.registerNode(selenium,nodeConfig, hubHost, hubPort);
     }
 
     /**
      * Get the output of selenium node for debugging
      * @return String the output of node
      */
-    @RequestMapping(method=RequestMethod.GET, value="/node/output")
-    public String getNodeOutPut() {
-         return node.getNodeOutPut();
+    @RequestMapping(method=RequestMethod.GET, value="/registerNode/output/{selenium:.+}")
+    public String getNodeOutPut(@PathVariable("selenium") String selenium) {
+        return node.getNodeOutPut(selenium);
     }
 
     /**
      * Start screen recording of test execution
      * @param file
      */
-    @RequestMapping(method=RequestMethod.GET, value="/screen/record/start/{file}")
-    public void startscreenRecord(@PathVariable("file") String file) {
-         File videoOutPut=new File(file);
-         record.startScreenRecording(videoOutPut);
+    @RequestMapping(method=RequestMethod.GET, value="/screen/record/start/{dir:.+}")
+    public void startscreenRecord(@PathVariable("dir") String file) {
+        File videoOutPut=new File(file);
+        record.startScreenRecording(videoOutPut);
     }
 
     /**
@@ -88,6 +103,15 @@ public class DriverController {
      */
     @RequestMapping(method=RequestMethod.GET, value="/screen/record/stop")
     public void stopscreenRecord() {
-         record.stopScreenRecording();
+        record.stopScreenRecording();
     }
+
+    /**
+     * Stop selenium node
+     */
+    @RequestMapping(method=RequestMethod.GET, value="/registerNode/stop")
+    public void stopNode() {
+        node.stopNode();
+    }
+
 }

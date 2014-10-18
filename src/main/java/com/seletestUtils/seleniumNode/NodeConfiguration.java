@@ -28,6 +28,7 @@ package com.seletestUtils.seleniumNode;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.Vector;
 
 import javax.annotation.PostConstruct;
 import javax.annotation.PreDestroy;
@@ -37,8 +38,6 @@ import nodeConf.WebDriverOptions;
 import org.apache.commons.io.FileUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 
@@ -52,35 +51,54 @@ public class NodeConfiguration {
 
     private static final Logger logger = LoggerFactory.getLogger(NodeConfiguration.class);
 
-    @Autowired
-    Environment env;
+    /**Version of executable*/
+    private String version;
+
+    /**Process for java -jar selenium...*/
+    private Process process;
+
+    public void setVersion(String version){
+        this.version=version;
+    }
+    public void setProcess(Process process){
+        this.process=process;
+    }
+    public Process getProcess(){
+        return process;
+    }
 
     @PostConstruct
     public void startNodeConfiguration() {
         logger.info("{}@{} has been started ...", getClass().getSimpleName(), getClass().hashCode());
-        downloadWebDriverExecutables();
     }
 
     @PreDestroy
-    public void stop() {
+    public void stopNodeConfiguration() {
         logger.info("{}@{} has been stopped ...", getClass().getSimpleName(), getClass().hashCode());
         removeExecutables();
     }
 
-    /**Download IEDriver,ChromeDriver,PhantomJSDriver executables*/
-    private void downloadWebDriverExecutables(){
-        WebDriverOptions.downloadDriver(new File(env.getProperty("chromedriver.path")),env.getProperty("chromedriver.version"));
-        WebDriverOptions.downloadDriver(new File(env.getProperty("iedriver.path")),env.getProperty("iedriver.version"));
-        WebDriverOptions.downloadDriver(new File(env.getProperty("phantomjsdriver.path")),env.getProperty("phantomjsdriver.version"));
-        WebDriverOptions.downloadDriver(new File(env.getProperty("selenium.path")),env.getProperty("selenium.version"));
-    }
-
     /**Remove IEDriver,ChromeDriver,PhantomJSDriver executables*/
     private void removeExecutables(){
-        new File("chromedriver.path").delete();
-        new File("iedriver.path").delete();
-        new File("phantomjsdriver.path").delete();
-        new File("selenium.path").delete();
+        new File("chromedriver.exe").getAbsoluteFile().delete();
+        new File("selenium-server-standalone-"+version+".0.jar").getAbsoluteFile().delete();
+        new File("phantomjs-"+version).getAbsoluteFile().delete();
+        new File("IEDriverServer.exe").getAbsoluteFile().delete();
+    }
+
+    /**Download drivers*/
+    public void downloadDrivers(String version, String type, String url) {
+        if(type.contains("chrome")) {
+            WebDriverOptions.downloadDriver(new File("chromedriver.exe").getAbsoluteFile(),"http://chromedriver.storage.googleapis.com/"+version+"/"+url+".zip");
+        } else if(type.contains("selenium")) {
+            WebDriverOptions.downloadDriver(new File("selenium-server-standalone-"+version+".0.jar").getAbsoluteFile(),"http://selenium-release.storage.googleapis.com/"+version+"/"+url+".jar");
+        } else if(type.contains("phantom")) {
+            WebDriverOptions.downloadDriver(new File("phantomjs-"+version).getAbsoluteFile(),"https://bitbucket.org/ariya/phantomjs/downloads/"+url+".zip");
+        } else if(type.contains("ie")) {
+            WebDriverOptions.downloadDriver(new File("IEDriverServer.exe").getAbsoluteFile(),"http://selenium-release.storage.googleapis.com/"+version+"/IEDriverServer_"+url+".zip");
+        } else {
+            throw new RuntimeException("The driver is not defined!!!");
+        }
     }
 
     /**
@@ -89,30 +107,40 @@ public class NodeConfiguration {
      * @param hubHost
      * @param hubPort
      */
-    public void registerNode(String nodeConfig, String hubHost, String hubPort) {
+    public void registerNode(String selenium, String nodeConfig, String hubHost, String hubPort) {
         try {
-            ProcessBuilder pb = new ProcessBuilder("java","-jar",new File(env.getProperty("selenium.path")).getAbsolutePath().substring(new File(env.getProperty("selenium.path")).getAbsolutePath().lastIndexOf("\\")).replace("\\",""),"-role","node","-hub","http://"+hubHost+":"+hubPort+"/grid/register","-nodeConfig",nodeConfig+".json");
-            pb.directory(new File(env.getProperty("selenium.path")).getParentFile());
-            pb.redirectOutput(new File(new File(env.getProperty("selenium.path")).getParentFile()+"/node.txt"));
-            pb.start();
+            Vector<String> commands=new Vector<String>();
+            commands.add("java");
+            commands.add("-jar");
+            commands.add(new File("selenium-server-standalone-"+selenium+".jar").getAbsolutePath());
+            commands.add("-role");
+            commands.add("node");
+            commands.add("-hub");
+            commands.add("http://"+hubHost+":"+hubPort+"/grid/register");
+            commands.add("-nodeConfig");
+            commands.add(nodeConfig+".json");
+            ProcessBuilder pb = new ProcessBuilder(commands);
+            pb.directory(new File("selenium-server-standalone-"+selenium+".jar").getAbsoluteFile().getParentFile());
+            pb.redirectOutput(new File(new File("selenium-server-standalone-"+selenium+".jar").getAbsoluteFile().getParentFile()+"/node.txt"));
+            setProcess(pb.start());
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
     }
 
     /**Return selenium node output*/
-    public String getNodeOutPut() {
+    public String getNodeOutPut(String selenium) {
         try {
-            return FileUtils.readFileToString(new File(new File(env.getProperty("selenium.path")).getParentFile()+"/node.txt").getAbsoluteFile());
+            return FileUtils.readFileToString(new File(new File("selenium-server-standalone-"+selenium+".jar").getAbsoluteFile().getParentFile()+"/node.txt").getAbsoluteFile());
         } catch (IOException e) {
             logger.error(e.getMessage());
         }
-        return null;
+        return "";
     }
 
-    public String stopNode(){
-     //TODO
-     return null;
+    /**Destroy node process*/
+    public void stopNode(){
+        getProcess().destroy();
     }
 
 }
