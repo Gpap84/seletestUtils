@@ -80,10 +80,15 @@ public class NodeConfiguration {
 
     /**Remove IEDriver,ChromeDriver,PhantomJSDriver executables*/
     private void removeExecutables(){
-        new File("chromedriver.exe").getAbsoluteFile().delete();
-        new File("selenium-server-standalone-"+version+".0.jar").getAbsoluteFile().delete();
-        new File("phantomjs-"+version).getAbsoluteFile().delete();
-        new File("IEDriverServer.exe").getAbsoluteFile().delete();
+        if(new File("chromedriver.exe").getAbsoluteFile().exists()) {
+            new File("chromedriver.exe").getAbsoluteFile().delete();
+        } if(new File("selenium-server-standalone-"+version+".0.jar").getAbsoluteFile().exists()) {
+            new File("selenium-server-standalone-"+version+".0.jar").getAbsoluteFile().delete();
+        } if(new File("phantomjs-"+version).getAbsoluteFile().exists()) {
+            new File("phantomjs-"+version).getAbsoluteFile().delete();
+        } if(new File("IEDriverServer.exe").getAbsoluteFile().exists()) {
+            new File("IEDriverServer.exe").getAbsoluteFile().delete();
+        }
     }
 
     /**Download drivers*/

@@ -48,10 +48,33 @@ public class AppiumController {
      * Download appium server
      * @param url
      */
-    @RequestMapping(method=RequestMethod.GET, value="/appium/Appium/download/{version:.+}")
+    @RequestMapping(method=RequestMethod.GET, value="/appium/download/{version:.+}")
     public void downloadAppium(@PathVariable("version") String url) {
         appium.downloadAppium(url);
     }
 
+    /**
+     * Start appium instance
+     * @param host
+     * @param port
+     * @param platform
+     * @param json
+     * @return response
+     */
+    @RequestMapping(method=RequestMethod.GET, value="/appium/start/{appiumHost}/{appiumPort}/{platform}/{nodeConfig}")
+    public String startAppiumServer(
+            @PathVariable("appiumHost") String host,
+            @PathVariable("appiumPort") String port,
+            @PathVariable("platform") String platform,
+            @PathVariable("nodeConfig") String json) {
+        return appium.startAppiumServer(host, port, json, platform);
+    }
 
+    /**
+     * Stop appium
+     */
+    @RequestMapping(method=RequestMethod.GET, value="/appium/stop/{platform}")
+    public void stopNode(@PathVariable("platform") String platform) {
+        appium.stopNode(platform);
+    }
 }
