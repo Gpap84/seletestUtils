@@ -25,11 +25,17 @@ dir: parameter that determines the directory in which the avi file is saved
 
 Endpoints for Appium Configuration:<br><br>
 
-* <b>http:/nodeIP:8000/appium/Appium/download/{version}</b> :Downloads version of appium from https://bitbucket.org/appium/appium.app/downloads/<br>
+* <b>http:/nodeIP:8000/appium/Appium/download/{version}</b> : downloads version of appium from https://bitbucket.org/appium/appium.app/downloads/<br>
 version: parameter that defines the version of appium server to download e.g AppiumForWindows-1.2.4.1 
 
-* <b>http:/nodeIP:8000/appium/stop/{platform}</b> :Start appium using node.js<br>
-platform: the parameter that determines the platform in which Appium server runs (WINDOWS or MAC)
+* <b>http://nodeIP:8000/appium/start/{appiumHost}/{appiumPort}/{platform}/{nodeConfig}</b> : starts appium instance from command line using nodeJS.<br>
+appiumHost: parameter that determines host of Appium server<br>
+appiumPort: parameter that determines port of Appium server<br>
+platform: parameter that determines the platform in which Appium server runs (WINDOWS or MAC)<br>
+nodeConfig: parameter that determines the nodeConfig.json file that used to register to Grid server<br>
+
+* <b>http:/nodeIP:8000/appium/stop/{platform}</b> :Stops all appium instances<br>
+platform: parameter that determines the platform in which Appium server runs (WINDOWS or MAC)
 
 
 
